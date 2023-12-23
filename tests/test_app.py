@@ -1,35 +1,11 @@
-import pytest
 from fastapi.testclient import TestClient
 
 from fastzero.app import app
-from fastzero.database import get_session
-from fastzero.models import User
 from fastzero.schemas import UserPublic
 
 """Seguindo a abordagem AAA"""
 
-
-@pytest.fixture
-def cliente(session):
-    """Injetar uma sessao de teste"""
-
-    def get_session_overide():
-        return session
-
-    with TestClient(app) as cliente:
-        app.dependency_overrides[get_session] = get_session_overide
-        yield cliente
-    app.dependency_overrides.clear()
-
-
-@pytest.fixture
-def user(session):
-    user = User(username='Test', email='teste@test.com', password='testtest')
-    session.add(user)
-    session.commit()
-    session.refresh(user)
-
-    return user
+client = TestClient(app)
 
 
 def test_create_user_app(cliente):
@@ -65,9 +41,10 @@ def test_read_users_with_users(cliente, user):
     assert response.json() == {'users': [user_schema]}
 
 
-def test_update_user_app(cliente, user):
+def test_update_user_app(cliente, user, token):
     resposta = cliente.put(
-        '/users/1',
+        f'/users/{user.id}',
+        headers={'Authorization': f'Bearer {token}'},
         json={
             'username': 'bob',
             'email': 'bob@gmail.com',
@@ -83,8 +60,22 @@ def test_update_user_app(cliente, user):
     }
 
 
-def test_delete_user_app(cliente, user):
-    resposta = cliente.delete('/users/1')
+def test_delete_user_app(cliente, user, token):
+    resposta = cliente.delete(
+        f'/users/{user.id}', headers={'Authorization': f'Bearer {token}'}
+    )
 
     assert resposta.status_code == 200
     assert resposta.json() == {'detail': 'User deleted'}
+
+
+def test_get_token(cliente, user):
+    response = cliente.post(
+        '/token',
+        data={'username': user.email, 'password': user.clean_password},
+    )
+    token = response.json()
+
+    assert response.status_code == 200
+    assert 'access_token' in token
+    assert 'token_type' in token

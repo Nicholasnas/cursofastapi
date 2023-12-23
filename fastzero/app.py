@@ -1,15 +1,21 @@
 from typing import Annotated
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from fastzero.database import get_session
 from fastzero.models import User
-from fastzero.schemas import Message, UserList, UserPublic, UserSchema
+from fastzero.schemas import Message, Token, UserList, UserPublic, UserSchema
+from fastzero.security import (
+    create_access_token,
+    get_current_user,
+    get_password_hash,
+    verify_password,
+)
 
 app = FastAPI()
-database = []
 
 
 @app.get('/users/', response_model=UserList)
@@ -37,9 +43,11 @@ async def criar_usuario(
         raise HTTPException(
             status_code=400, detail='Usuário já foi registrado'
         )
+    hashed_password = get_password_hash(user.password)
 
+    # password armazenada é o hash
     db_user = User(
-        username=user.username, password=user.password, email=user.email
+        username=user.username, password=hashed_password, email=user.email
     )
     session.add(db_user)
     session.commit()
@@ -48,41 +56,71 @@ async def criar_usuario(
     return db_user
 
 
-@app.put('/users/{user_id}', response_model=UserPublic, status_code=200)
+@app.put('/users/{user_id}', response_model=UserPublic)
 async def put_usuario(
     user_id: int,
     user: UserSchema,
     session: Annotated[Session, Depends(get_session)],
+    current_user: Annotated[User, Depends(get_current_user)],
 ):
+    if current_user.id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='Not enough permissions',
+        )
 
-    query = select(User).where(User.id == user_id)
-    db_user = session.scalar(query)
-
-    if db_user is None:
-        raise HTTPException(status_code=404, detail='User não encontrado')
-
-    db_user.username = user.username
-    db_user.email = user.email
-    db_user.password = user.password
+    current_user.username = user.username
+    current_user.email = user.email
+    current_user.password = get_password_hash(user.password)
     session.commit()
-    session.refresh(db_user)
+    session.refresh(current_user)
 
-    return db_user
+    return current_user
 
 
 @app.delete('/users/{user_id}', response_model=Message)
 async def delete_usuario(
     user_id: int,
     session: Annotated[Session, Depends(get_session)],
+    current_user: Annotated[User, Depends(get_current_user)],
 ):
 
-    query = select(User).where(User.id == user_id)
-    db_user = session.scalar(query)
+    if current_user.id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='Not enough permissions',
+        )
 
-    if db_user is None:
-        raise HTTPException(status_code=404, detail='User não encontrado')
-
-    session.delete(db_user)
+    session.delete(current_user)
     session.commit()
 
     return {'detail': 'User deleted'}
+
+
+"""Endpoint de gereção de token"""
+
+
+@app.post('/token', response_model=Token)
+async def login_for_access_token(
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    session: Annotated[Session, Depends(get_session)],
+):
+    """Endpoint de geração de token, antentica
+    o usuario e gera um token de acesso JWT"""
+
+    query = select(User).where(User.email == form_data.username)
+    user = session.scalar(query)
+
+    if not user:
+        raise HTTPException(
+            status_code=400, detail='Incorrect email or password'
+        )
+
+    if not verify_password(form_data.password, user.password):
+        raise HTTPException(
+            status_code=400, detail='Incorrect email or password'
+        )
+
+    access_token = create_access_token(data={'sub': user.email})
+    # retorna um token jwt
+    return {'access_token': access_token, 'token_type': 'bearer'}
