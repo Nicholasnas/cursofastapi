@@ -1,15 +1,6 @@
-from fastapi.testclient import TestClient
-
-from fastzero.app import app
-
-"""Seguindo a abordagem AAA"""
-
-client = TestClient(app)
-
-
 def test_get_token(cliente, user):
     response = cliente.post(
-        'auth/token',
+        '/auth/token',
         data={'username': user.email, 'password': user.clean_password},
     )
     token = response.json()
