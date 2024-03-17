@@ -7,7 +7,7 @@ def test_create_user_app(cliente):
         '/users/',
         json={
             'username': 'ricardo',
-            'email': 'ricardo@gmail.com',
+            'email': 'ricardo@example.com',
             'password': 'secret',
         },
     )
@@ -15,7 +15,7 @@ def test_create_user_app(cliente):
     assert resposta.status_code == 201
     assert resposta.json() == {
         'username': 'ricardo',
-        'email': 'ricardo@gmail.com',
+        'email': 'ricardo@example.com',
         'id': 1,
     }
 
@@ -40,17 +40,31 @@ def test_update_user_app(cliente, user, token):
         headers={'Authorization': f'Bearer {token}'},
         json={
             'username': 'bob',
-            'email': 'bob@gmail.com',
-            'password': 'newpassword',
+            'email': 'bob@example.com',
+            'password': 'mynewpassword',
         },
     )
 
     assert resposta.status_code == 200
     assert resposta.json() == {
         'username': 'bob',
-        'email': 'bob@gmail.com',
-        'id': 1,
+        'email': 'bob@example.com',
+        'id': user.id,
     }
+
+
+def test_update_user_with_wrong_user(cliente, other_user, token):
+    response = cliente.put(
+        f'/users/{other_user.id}',
+        headers={'Authorization': f'Bearer {token}'},
+        json={
+            'username': 'bob',
+            'email': 'bob@example.com',
+            'password': 'mynewpassword',
+        },
+    )
+    assert response.status_code == 400
+    assert response.json() == {'detail': 'Not enough permissions'}
 
 
 def test_delete_user_app(cliente, user, token):
@@ -59,4 +73,13 @@ def test_delete_user_app(cliente, user, token):
     )
 
     assert resposta.status_code == 200
-    assert resposta.json() == {'detail': 'User deleted'}
+    assert resposta.json() == {'message': 'User deleted'}
+
+
+def test_delete_user_wrong_user(cliente, other_user, token):
+    response = cliente.delete(
+        f'/users/{other_user.id}', headers={'Authorization': f'Bearer {token}'}
+    )
+
+    assert response.status_code == 400
+    assert response.json() == {'detail': 'Not enough permissions'}

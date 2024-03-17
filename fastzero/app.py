@@ -11,4 +11,4 @@ app.include_router(auth.router)
 
 @app.get('/', status_code=status.HTTP_200_OK, response_model=Message)
 async def read_root():
-    return {'Message': 'Olá Mundo!'}
+    return {'message': 'Olá Mundo!'}

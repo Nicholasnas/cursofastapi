@@ -91,4 +91,4 @@ async def delete_usuario(
     session.delete(current_user)
     session.commit()
 
-    return {'detail': 'User deleted'}
+    return {'message': 'User deleted'}

@@ -25,7 +25,7 @@ class UserList(BaseModel):
 
 
 class Message(BaseModel):
-    detail: str
+    message: str
 
 
 class Token(BaseModel):
