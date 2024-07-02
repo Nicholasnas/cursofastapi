@@ -1,10 +1,12 @@
-from fastapi.testclient import TestClient
-
-from fastzero.app import app
+from http import HTTPStatus
 
 """Seguindo a abordagem AAA"""
 
-client = TestClient(app)
+
+def teste_ola_mundo(cliente):
+    response = cliente.get('/ola mundo')
+    assert response.status_code == HTTPStatus.OK
+    assert '<h1>Olá mundo!</h1>' in response.text
 
 
 def test_get_token(cliente, user):
@@ -14,6 +16,6 @@ def test_get_token(cliente, user):
     )
     token = response.json()
 
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK  # RESPONSE 200
     assert 'access_token' in token
     assert 'token_type' in token

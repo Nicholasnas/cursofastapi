@@ -4,7 +4,6 @@ from fastzero.models import User
 
 
 def test_create_user(session):
-
     new_user = User(
         username='alice', password='secret', email='teste@test.com'
     )

@@ -2,7 +2,7 @@ import factory
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 
 from fastzero.app import app
@@ -21,7 +21,7 @@ class UserFactory(factory.Factory):
     password = factory.LazyAttribute(lambda obj: f'{obj.username}@example.com')
 
 
-@pytest.fixture
+@pytest.fixture()
 def cliente(session):
     """Injetar uma sessao de teste"""
 
@@ -34,7 +34,7 @@ def cliente(session):
     app.dependency_overrides.clear()
 
 
-@pytest.fixture
+@pytest.fixture()
 def user(session):
     password = 'testtest'
     user = UserFactory(password=get_password_hash(password))
@@ -49,7 +49,7 @@ def user(session):
     return user
 
 
-@pytest.fixture
+@pytest.fixture()
 def other_user(session):
     password = 'testtest'
     user = UserFactory(password=get_password_hash(password))
@@ -64,7 +64,7 @@ def other_user(session):
     return user
 
 
-@pytest.fixture
+@pytest.fixture()
 def session():
     engine = create_engine(
         'sqlite:///:memory:',
@@ -72,13 +72,14 @@ def session():
         poolclass=StaticPool,
     )
 
-    Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     Base.metadata.create_all(engine)
-    yield Session()
+    with Session(engine) as session:
+        yield session
+
     Base.metadata.drop_all(engine)
 
 
-@pytest.fixture
+@pytest.fixture()
 def token(cliente, user):
     response = cliente.post(
         '/auth/token',

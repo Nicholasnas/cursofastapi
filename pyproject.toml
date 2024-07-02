@@ -1,20 +1,20 @@
 [tool.poetry]
 name = "fastzero"
 version = "0.1.0"
-description = ""
+description = "Curso FastApi dunossauro"
 authors = ["Your Name <you@example.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "3.11.*"
-fastapi = "^0.103.2"
+fastapi = "0.111.0"
 uvicorn = "^0.23.2"
 sqlalchemy = "^2.0.22"
 pydantic-settings = "^2.0.3"
 pydantic = {extras = ["email"], version = "^2.4.2"}
 alembic = "^1.12.0"
 passlib = {extras = ["bcrypt"], version = "^1.7.4"}
-python-multipart = "^0.0.6"
+python-multipart = "^0.0.9"
 pyjwt = "^2.8.0"
 
 
@@ -33,29 +33,27 @@ freezegun = "^1.4.0"
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
-
 [tool.ruff]
+preview = true
 line-length = 79
-exclude = ['.venv', 'migrations']
+extend-exclude = ['migrations']
 
+[tool.ruff.lint]
+select = ['I', 'F', 'E', 'W', 'PL', 'PT']
 
-[tool.isort]
-profile = "black"
-line_length = 79
-extend_skip = ['migrations']
+[tool.ruff.format]
+preview = true
+quote-style = 'single'
 
 [tool.pytest.ini_options]
 pythonpath = "."
-
-
-[tool.blue] 
-extend-exclude = '(migrations/)'
+addopts = '-p no:warnings'
 
 
 [tool.taskipy.tasks]
-lint = 'ruff . && blue --check . --diff'
-format = 'blue .  && isort .'
+lint = 'ruff check . && ruff check . --diff'
+format = 'ruff check . --fix && ruff format .'
 run = 'uvicorn fastzero.app:app --reload'
 pre_test = 'task lint'
-test = 'pytest -s -x --cov=fastzero -vv'
+test = 'pytest -s -x --cov=fast_zero -vv'
 post_test = 'coverage html'

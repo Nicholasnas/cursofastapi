@@ -1,3 +1,4 @@
+from http import HTTPStatus
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -15,14 +16,24 @@ Session = Annotated[Session, Depends(get_session)]
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
+@router.get('/{user_id}', response_model=UserPublic)
+def retorna_usuario(user_id, session: Session):
+    query = select(User).where(User.id == user_id)
+    user_db = session.scalar(query)
+
+    if not user_db:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail='User not Found'
+        )
+    return user_db
+
 @router.get('/', response_model=UserList)
-async def retorna_usuarios(
+def retorna_usuarios(
     session: Session,
     skip: int = 0,
     limit: int = 100,
 ):
-
-    query = select(User).offset(skip).limit(limit)
+    query = select(User).offset(skip).limit(limit).order_by(User.id)
     usuarios_db = session.scalars(query).all()
 
     return {'users': usuarios_db}
@@ -31,14 +42,17 @@ async def retorna_usuarios(
 @router.post(
     '/', status_code=status.HTTP_201_CREATED, response_model=UserPublic
 )
-async def criar_usuario(user: UserSchema, session: Session):
+def criar_usuario(user: UserSchema, session: Session):
     # Verifica se o usuario já existe no banco
-    query = select(User).where(User.username == user.username)
+    query = select(User).where(
+        (User.username == user.username) | (User.email == user.email)
+    )
     db_user = session.scalar(query)
 
     if db_user:
         raise HTTPException(
-            status_code=400, detail='Usuário já foi registrado'
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail='Usuário já foi registrado',
         )
     hashed_password = get_password_hash(user.password)
 
@@ -54,7 +68,7 @@ async def criar_usuario(user: UserSchema, session: Session):
 
 
 @router.put('/{user_id}', response_model=UserPublic)
-async def put_usuario(
+def put_usuario(
     user_id: int,
     user: UserSchema,
     session: Session,
@@ -76,12 +90,11 @@ async def put_usuario(
 
 
 @router.delete('/{user_id}', response_model=Message)
-async def delete_usuario(
+def delete_usuario(
     user_id: int,
     session: Session,
     current_user: CurrentUser,
 ):
-
     if current_user.id != user_id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
