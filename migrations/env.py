@@ -3,7 +3,7 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from fastzero.models import Base
-from fastzero.settings import Settings
+from fastzero.core.settings import Settings
 from alembic import context
 
 # this is the Alembic Config object, which provides

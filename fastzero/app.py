@@ -1,13 +1,14 @@
 from fastapi import FastAPI, status
 from fastapi.responses import HTMLResponse
 
-from fastzero.routes import auth, users
-from fastzero.schemas import Message
+from fastzero.routes import auth, todos, users
+from fastzero.schemas.users_schemas import Message
 
 app = FastAPI()
 
 app.include_router(users.router)
 app.include_router(auth.router)
+app.include_router(todos.router)
 
 
 @app.get('/', status_code=status.HTTP_200_OK, response_model=Message)

@@ -3,7 +3,14 @@ from http import HTTPStatus
 """Seguindo a abordagem AAA"""
 
 
-def teste_ola_mundo(cliente):
+def test_ola_mundo(cliente):
+    response = cliente.get('/')
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {'message': 'Olá Mundo!'}
+
+
+def teste_ola_mundo_html(cliente):
     response = cliente.get('/ola mundo')
     assert response.status_code == HTTPStatus.OK
     assert '<h1>Olá mundo!</h1>' in response.text

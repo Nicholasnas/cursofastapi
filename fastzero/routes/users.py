@@ -5,10 +5,15 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from fastzero.database import get_session
-from fastzero.models import User
-from fastzero.schemas import Message, UserList, UserPublic, UserSchema
-from fastzero.security import get_current_user, get_password_hash
+from fastzero.core.database import get_session
+from fastzero.core.security import get_current_user, get_password_hash
+from fastzero.models.models import User
+from fastzero.schemas.users_schemas import (
+    Message,
+    UserList,
+    UserPublic,
+    UserSchema,
+)
 
 router = APIRouter(prefix='/users', tags=['users'])
 
@@ -17,7 +22,7 @@ CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
 @router.get('/{user_id}', response_model=UserPublic)
-def retorna_usuario(user_id, session: Session):
+def retorna_usuario(user_id: int, session: Session):
     query = select(User).where(User.id == user_id)
     user_db = session.scalar(query)
 
@@ -26,6 +31,7 @@ def retorna_usuario(user_id, session: Session):
             status_code=HTTPStatus.NOT_FOUND, detail='User not Found'
         )
     return user_db
+
 
 @router.get('/', response_model=UserList)
 def retorna_usuarios(
@@ -42,7 +48,7 @@ def retorna_usuarios(
 @router.post(
     '/', status_code=status.HTTP_201_CREATED, response_model=UserPublic
 )
-def criar_usuario(user: UserSchema, session: Session):
+def criar_usuario(user: UserSchema, session: Session):  # type: ignore
     # Verifica se o usuario já existe no banco
     query = select(User).where(
         (User.username == user.username) | (User.email == user.email)

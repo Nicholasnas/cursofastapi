@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-from fastzero.schemas import UserPublic
+from fastzero.schemas.users_schemas import UserPublic
 
 
 def test_create_user_app(cliente):
@@ -21,11 +21,32 @@ def test_create_user_app(cliente):
     }
 
 
+def test_duplicate_user_app(cliente, user):
+    response = cliente.post(
+        '/users/',
+        json={
+            'username': user.username,
+            'email': user.email,
+            'password': 'secret',
+        },
+    )
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json() == {'detail': 'Usuário já foi registrado'}
+
+
 def test_get_user(cliente, user):
     user_schema = UserPublic.model_validate(user).model_dump()
-    response = cliente.get('/users/{user_schema.id}')
+    response = cliente.get(f'/users/{user.id}')
 
     assert response.json() == user_schema
+
+
+def test_get_user_wrong_user(cliente):
+    response = cliente.get('/users/1')
+
+    assert response.json() == {'detail': 'User not Found'}
+    assert response.status_code == HTTPStatus.NOT_FOUND
 
 
 def test_get_users_app(cliente):

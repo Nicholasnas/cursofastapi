@@ -6,17 +6,16 @@ from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 
 from fastzero.app import app
-from fastzero.database import get_session
-from fastzero.models import Base, User
-from fastzero.security import get_password_hash
+from fastzero.core.database import Base, get_session
+from fastzero.core.security import get_password_hash
+from fastzero.models.models import User
 
 
 class UserFactory(factory.Factory):
     class Meta:
         model = User
 
-    id = factory.Sequence(lambda n: n)
-    username = factory.LazyAttribute(lambda obj: f'test{obj.id}')
+    username = factory.Sequence(lambda n: f'test{n}')
     email = factory.LazyAttribute(lambda obj: f'{obj.username}@test.com')
     password = factory.LazyAttribute(lambda obj: f'{obj.username}@example.com')
 
