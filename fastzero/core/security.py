@@ -44,6 +44,8 @@ async def get_current_user(
         raise credentials_exception
     except ExpiredSignatureError:
         raise credentials_exception
+    except Exception as erro:
+        raise Exception(f'{erro}')
 
     user = session.scalar(
         select(User).where(User.email == token_data.username)

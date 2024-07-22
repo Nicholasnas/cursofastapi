@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import DeclarativeBase, Session
+from sqlalchemy.orm import Session
 
 from fastzero.core.settings import Configs
 
@@ -10,6 +10,3 @@ def get_session():
     with Session(engine) as session:
         yield session
 
-
-class Base(DeclarativeBase):
-    pass
