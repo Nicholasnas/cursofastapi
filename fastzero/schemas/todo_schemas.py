@@ -1,6 +1,5 @@
 from pydantic import BaseModel
 
-from datetime import datetime
 from fastzero.models.models import TodoState
 
 
@@ -10,13 +9,8 @@ class TodoSchema(BaseModel):
     state: TodoState
 
 
-class TodoPublic(BaseModel):
+class TodoPublic(TodoSchema):
     id: int
-    title: str
-    description: str
-    state: TodoState
-    created_at: datetime
-    updated_at: datetime
 
 
 class TodoList(BaseModel):

@@ -9,4 +9,3 @@ engine = create_engine(Configs.DATABASE_URL)
 def get_session():
     with Session(engine) as session:
         yield session
-

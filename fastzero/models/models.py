@@ -2,7 +2,8 @@ from datetime import datetime
 from enum import Enum
 
 from sqlalchemy import DateTime, ForeignKey, Integer, String, func, text
-from sqlalchemy.orm import Mapped, mapped_column, relationship, DeclarativeBase
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+
 
 class Base(DeclarativeBase):
     pass
@@ -43,7 +44,7 @@ class TodoState(str, Enum):
 
 class Todo(Base):
     __tablename__ = 'todos'
-    
+
     id: Mapped[int] = mapped_column(
         Integer, autoincrement=True, primary_key=True
     )
@@ -55,9 +56,10 @@ class Todo(Base):
     user: Mapped[User] = relationship(
         back_populates='todos',
     )
-    created_at:Mapped[datetime] = mapped_column(DateTime,
-        server_default=func.now(), nullable=False)
-    
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), nullable=False
+    )
+
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
         server_default=func.now(),

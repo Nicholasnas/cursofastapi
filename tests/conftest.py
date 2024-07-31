@@ -2,11 +2,12 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
-from sqlalchemy.pool import StaticPool
+from testcontainers.postgres import PostgresContainer
 
 from fastzero.app import app
-from fastzero.core.database import Base, get_session
+from fastzero.core.database import get_session
 from fastzero.core.security import get_password_hash
+from fastzero.models.models import Base
 from tests.factories import UserFactory
 
 
@@ -53,17 +54,22 @@ def other_user(session):
     return user
 
 
-@pytest.fixture()
-def session():
-    engine = create_engine(
-        'sqlite:///:memory:',
-        connect_args={'check_same_thread': False},
-        poolclass=StaticPool,
-    )
+@pytest.fixture(scope='session')
+def engine():
+    with PostgresContainer('postgres:16', driver='psycopg') as postgres:
+        _engine = create_engine(postgres.get_connection_url())
 
+        with _engine.begin():
+            yield _engine
+
+
+@pytest.fixture()
+def session(engine):
+    # criando um container de docker na versao 16
     Base.metadata.create_all(engine)
     with Session(engine) as session:
         yield session
+        session.rollback()
 
     Base.metadata.drop_all(engine)
 
