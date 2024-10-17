@@ -11,7 +11,7 @@ from fastzero.models.models import User
 from fastzero.schemas.users_schemas import (
     Message,
     UserList,
-    UserPublic,
+    UserPublic, 
     UserSchema,
 )
 
