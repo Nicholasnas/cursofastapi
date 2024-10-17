@@ -8,12 +8,8 @@ from sqlalchemy.orm import Session as Se
 from fastzero.core.database import get_session
 from fastzero.core.security import get_current_user
 from fastzero.models.models import Todo, User
-from fastzero.schemas.todo_schemas import (
-    TodoList,
-    TodoPublic,
-    TodoSchema,
-    TodoUpdate,
-)
+from fastzero.schemas.todo_schemas import (TodoList, TodoPublic, TodoSchema,
+                                           TodoUpdate)
 from fastzero.schemas.users_schemas import Message
 
 router = APIRouter()

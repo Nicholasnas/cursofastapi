@@ -6,11 +6,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session as session
 
 from fastzero.core.database import get_session
-from fastzero.core.security import (
-    create_access_token,
-    get_current_user,
-    verify_password,
-)
+from fastzero.core.security import (create_access_token, get_current_user,
+                                    verify_password)
 from fastzero.models.models import User
 from fastzero.schemas.auth_schemas import Token
 
