@@ -8,12 +8,8 @@ from sqlalchemy.orm import Session
 from fastzero.core.database import get_session
 from fastzero.core.security import get_current_user, get_password_hash
 from fastzero.models.models import User
-from fastzero.schemas.users_schemas import (
-    Message,
-    UserList,
-    UserPublic, 
-    UserSchema,
-)
+from fastzero.schemas.users_schemas import (Message, UserList, UserPublic,
+                                            UserSchema)
 
 router = APIRouter(prefix='/users', tags=['users'])
 
