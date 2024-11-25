@@ -1,0 +1,27 @@
+# flyctl launch added from .gitignore
+**/.venv
+**/__pycache__
+**/.ruff_cache
+**/.pytest_cache
+**/*__pycache__
+**/.coverage
+**/.vscode
+**/database.db
+**/.env
+**/.pytest_cache
+
+# flyctl launch added from .pytest_cache/.gitignore
+# Created by pytest automatically.
+.pytest_cache/**/*
+
+# flyctl launch added from .ruff_cache/.gitignore
+.ruff_cache/**/*
+
+# flyctl launch added from htmlcov/.gitignore
+# Created by coverage.py
+htmlcov/**/*
+
+# flyctl launch added from tests/htmlcov/.gitignore
+# Created by coverage.py
+tests/htmlcov/**/*
+fly.toml
